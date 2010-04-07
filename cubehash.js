@@ -27,6 +27,11 @@
  *         "63687e93c6a512c9f2e9689bb0cd4f0196d45e4de7cbe50c4402fa12"
  *     cubehash("\u26e9\u8bae\uf60a\u31e5\udb76\uccff\u6b2a\uc688\u76bd\u935f\u3d9d\u8a17\ude9b\uf39e\u13aa\u611c\u1ce3\u421e\ufacd\ub4f4\udedc\u9a57\ue137\uef50\uf5be\u5b55\u1c4c\u04b4\ud839\ua735\ue224\ue7fa")
  *         "06a2a08f2ca14ca233b98cb195c6fc284ce6ef026961ca2278178040"
+ *
+ * This function was written by Chris Drost of drostie.org, and he hereby dedicates it into the 
+ * public domain: it has no copyright. It is provided with NO WARRANTIES OF ANY KIND. 
+ * I do humbly request that you provide me some sort of credit if you use it; but I leave that 
+ * choice up to you.
  */
 
 /*jslint white: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, regexp: true, strict: true, newcap: true, immed: true */
