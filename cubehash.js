@@ -28,28 +28,30 @@
  *     cubehash("\u26e9\u8bae\uf60a\u31e5\udb76\uccff\u6b2a\uc688\u76bd\u935f\u3d9d\u8a17\ude9b\uf39e\u13aa\u611c\u1ce3\u421e\ufacd\ub4f4\udedc\u9a57\ue137\uef50\uf5be\u5b55\u1c4c\u04b4\ud839\ua735\ue224\ue7fa")
  *         "06a2a08f2ca14ca233b98cb195c6fc284ce6ef026961ca2278178040"
  */
-
+"use strict";
 var cubehash = (function () {
-	var state, z, input, initial, out_length, h, o;
+	var state, z, input, initial, out_length, o;
 	out_length = 224;
 	state = [
-		out_length/8,32,16,0, 0,0,0,0,  0,0,0,0, 0,0,0,0,  
-		0,0,0,0, 0,0,0,0,  0,0,0,0, 0,0,0,0
+		out_length / 8, 32, 16, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0
 	];
 	
 	// output formatting function, giving the little-endian hex display of a number.
-	o = function () {
+	o = (function () {
 		function h(n) {
 			return ("00" + n.toString(16)).slice(-2);
 		}
 		return function (n) {
 			return h(n & 255) + h(n >>> 8) + h(n >>> 16) + h(n >>> 24);
 		};
-	}();
+	}());
 	
 	// We call the rounds function z and divide the CubeHash instructions within.
 	z = (function () {
-		var i, j, k, x, y;
+		var i, j, tmp, round;
 		// plus and rotate steps. r + s == 32.
 		function x(r, s) {
 			for (i = 0; i < 16; i += 1) {
@@ -78,7 +80,7 @@ var cubehash = (function () {
 		}
 		return function (n) {
 			n *= 16;
-			for (r = 0; r < n; r += 1) {
+			for (round = 0; round < n; round += 1) {
 				x(7, 25);
 				y(8, 2);
 				x(11, 21);
@@ -99,16 +101,16 @@ var cubehash = (function () {
 		}
 		input = [];
 		for (a = 0; a < str.length; a += 2) {
-			input.push(str.charCodeAt(a) + str.charCodeAt(a+1)*0x10000);
+			input.push(str.charCodeAt(a) + str.charCodeAt(a + 1) * 0x10000);
 		}
 		for (a = 0; a < input.length; a += 8) {
 			for (b = 0; b < 8; b += 1) {
-				state[b] ^= input[a+b];
+				state[b] ^= input[a + b];
 			}
 			z(1);
 		}
 		state[31] ^= 1;
 		z(10);
-		return state.map(o).join("").substring(0, out_length/4);
+		return state.map(o).join("").substring(0, out_length / 4);
 	};
 }());
