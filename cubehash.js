@@ -28,9 +28,11 @@
  *     cubehash("\u26e9\u8bae\uf60a\u31e5\udb76\uccff\u6b2a\uc688\u76bd\u935f\u3d9d\u8a17\ude9b\uf39e\u13aa\u611c\u1ce3\u421e\ufacd\ub4f4\udedc\u9a57\ue137\uef50\uf5be\u5b55\u1c4c\u04b4\ud839\ua735\ue224\ue7fa")
  *         "06a2a08f2ca14ca233b98cb195c6fc284ce6ef026961ca2278178040"
  */
+
+/*jslint white: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, regexp: true, strict: true, newcap: true, immed: true */
 "use strict";
 var cubehash = (function () {
-	var state, z, input, initial, out_length, o;
+	var state, round, input, initial_state, out_length, tmp, i, j, r, plus_rotate, swap_xor_swap, hex, output_fn;
 	out_length = 224;
 	state = [
 		out_length / 8, 32, 16, 0, 0, 0, 0, 0,
@@ -39,78 +41,72 @@ var cubehash = (function () {
 		0, 0, 0, 0, 0, 0, 0, 0
 	];
 	
-	// output formatting function, giving the little-endian hex display of a number.
-	o = (function () {
-		function h(n) {
-			return ("00" + n.toString(16)).slice(-2);
+	plus_rotate = function (r, s) {
+		for (i = 0; i < 16; i += 1) {
+			state[16 + i] += state[i];
+			state[i] = (state[i] << r) ^ (state[i] >>> s);
 		}
-		return function (n) {
-			return h(n & 255) + h(n >>> 8) + h(n >>> 16) + h(n >>> 24);
-		};
-	}());
-	
-	// We call the rounds function z and divide the CubeHash instructions within.
-	z = (function () {
-		var i, j, tmp, round;
-		// plus and rotate steps. r + s == 32.
-		function x(r, s) {
-			for (i = 0; i < 16; i += 1) {
-				state[16 + i] += state[i];
-				state[i] = (state[i] << r) ^ (state[i] >>> s);
-			}
-		}
+	};
+
 		// swap, xor, and swap steps.
-		function y(mask1, mask2) {
-			for (i = 0; i < 16; i += 1) {
-				if (i & mask1) {
-					j = i ^ mask1;
-					tmp = state[i] ^ state[j + 16];
-					state[i] = state[j] ^ state[i + 16];
-					state[j] = tmp;
-				}
-			}
-			for (i = 16; i < 32; i += 1) {
-				if (i & mask2) {
-					j = i ^ mask2;
-					tmp = state[i];
-					state[i] = state[j];
-					state[j] = tmp;
-				}
+	swap_xor_swap = function (mask1, mask2) {
+		for (i = 0; i < 16; i += 1) {
+			if (i & mask1) {
+				j = i ^ mask1;
+				tmp = state[i] ^ state[j + 16];
+				state[i] = state[j] ^ state[i + 16];
+				state[j] = tmp;
 			}
 		}
-		return function (n) {
-			n *= 16;
-			for (round = 0; round < n; round += 1) {
-				x(7, 25);
-				y(8, 2);
-				x(11, 21);
-				y(4, 1);
+		for (i = 16; i < 32; i += 1) {
+			if (i & mask2) {
+				j = i ^ mask2;
+				tmp = state[i];
+				state[i] = state[j];
+				state[j] = tmp;
 			}
-		};
-	}());
+		}
+	};
+	round = function (n) {
+		n *= 16;
+		for (r = 0; r < n; r += 1) {
+			plus_rotate(7, 25);
+			swap_xor_swap(8, 2);
+			plus_rotate(11, 21);
+			swap_xor_swap(4, 1);
+		}
+	};
 	// we initialize the state and save it.
-	z(10);
-	initial = state.slice(0);
+	round(10);
+	initial_state = state.slice(0);
+	
+	// output formatting function, giving the little-endian hex display of a number.
+	hex = function (n) {
+		return ("00" + n.toString(16)).slice(-2);
+	};
+	output_fn = function (n) {
+		return hex(n & 255) + hex(n >>> 8) + hex(n >>> 16) + hex(n >>> 24);
+	};
 	
 	return function (str) {
-		var a, b;
-		state = initial.slice(0);
+		var block, i;
+		state = initial_state.slice(0);
 		str += "\u0080";
 		while (str.length % 16 > 0) {
 			str += "\u0000";
 		}
 		input = [];
-		for (a = 0; a < str.length; a += 2) {
-			input.push(str.charCodeAt(a) + str.charCodeAt(a + 1) * 0x10000);
+		for (i = 0; i < str.length; i += 2) {
+			input.push(str.charCodeAt(i) + str.charCodeAt(i + 1) * 0x10000);
 		}
-		for (a = 0; a < input.length; a += 8) {
-			for (b = 0; b < 8; b += 1) {
-				state[b] ^= input[a + b];
+		for (block = 0; block < input.length; block += 8) {
+			for (i = 0; i < 8; i += 1) {
+				state[i] ^= input[block + i];
 			}
-			z(1);
+			round(1);
 		}
 		state[31] ^= 1;
-		z(10);
-		return state.map(o).join("").substring(0, out_length / 4);
+		round(10);
+		return state.map(output_fn).join("").substring(0, out_length / 4);
 	};
 }());
