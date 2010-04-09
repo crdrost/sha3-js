@@ -70,6 +70,8 @@ var halfskein = (function () {
 		original_length = message.length;
 		if (original_length % 16) {
 			message += pad.slice(original_length % 16);
+		} else if (original_length === 0) {
+			message = pad;
 		}
 		// then we construct the data array.
 		data = [];
@@ -132,7 +134,7 @@ var halfskein = (function () {
 	
 	// different options for configuration:
 	// ubi(0, "key string")
-	ubi(4, charcode(0x5368, 0x6e6b, 1, 0, 0, 1) + pad.slice(6));
+	ubi(4, charcode(0x5368, 0x6e6b, 1, 0, 256) + pad.slice(5));
 	// ubi(8, "personalization as UTF-16, against the standard.");
 	// ubi(12, "public key string, if such exists.");
 	// ubi(16, "key identifier");
@@ -141,7 +143,7 @@ var halfskein = (function () {
 	return function (m) {
 		state = initial.slice(0);
 		ubi(48, m);
-		ubi(63, pad);
+		ubi(63, zero + zero + zero + zero);
 		return state.map(output_fn).join("");
 	};
 }());
