@@ -48,14 +48,14 @@ var keccak = (function () {
 			hex = function (n) {
 				return ("00" + n.toString(16)).slice(-2);
 			};
-			/*
+			//*
 			o = function (n) {
-				return hex(n & 255) + hex(n >>> 8) + hex(n >>> 16) + hex(n >>> 24);
+				return hex(n & 255) + " " + hex(n >>> 8) + " " + hex(n >>> 16) + " " + hex(n >>> 24);
 			};
 			return function () {
-				return o(this.lo) + o(this.hi);
+				return o(this.lo) + " " + o(this.hi);
 			};
-			*/
+			// */
 			o = function (n) {
 				return hex(n >>> 24) + hex(n >>> 16) + hex(n >>> 8) + hex(n & 255);
 			};
@@ -92,8 +92,8 @@ var keccak = (function () {
 	keccak_f = function () {
 		var x, y, i, B, C, D, round, log;
 		for (round = 0; round < 24; round += 1) {
-			log = round < 5;
-			console.log("Round " + round);
+			//log = round < 5;
+			//console.log("Round " + round);
 			// THETA STEP
 			C = zeros(5);
 			for (x = 0; x < 5; x += 1) {
@@ -153,18 +153,24 @@ var keccak = (function () {
 			}
 		}
 	};
-	function attempt(lo, hi) {
+	return function (m) {
 		state = new State();
-		state(0, 0).xor(new L(lo, hi));
-		keccak_f();
-		console.log(state(0, 0) + " " + state(1, 0));
-	}
-	attempt(0, 0);
-	console.log(RC.join(" "));
-	//attempt(0x397B5853, 0x0001901C);
-	//attempt(0x53587b39, 0x1C900100);
-	//attempt(0xe4f6b0a6, 0x008090e0);
-	//attempt(0xa6b0f6e4, 0xe0908000);
+		m += "\u1c01\u0190";
+		while (m.length % 72 !== 0) {
+			m += "\u0000";
+		}
+		var b, k;
+		for (b = 0; b < m.length; b += 72) {
+			for (k = 0; k < 72; k += 4) {
+				state._array[k/4].xor(
+					new L(m.charCodeAt(b + k) + m.charCodeAt(b + k + 1) * 65536,
+						m.charCodeAt(b + k + 2) +  m.charCodeAt(b + k + 3) * 65536)
+				);
+			}
+			keccak_f();
+		}
+		return state._array.join(" ").split(" ").slice(0, 224/8).join("");
+	};
 }());
 /*
 	return function (m) {
