@@ -1,5 +1,5 @@
 /* blake32.js
- * A Javascript implementation of Jean-Philippe Aumasson's BLAKE32 algorithm.
+ * A Javascript implementation of Jean-Philippe Aumasson's BLAKE32 submission.
  * 
  * This implementation operates on Javascript strings, interpreted as UTF-16BE 
  * encoded (i.e. "\u1234\u5678" --> [0x12, 0x34, 0x56, 0x78], and is therefore

@@ -30,6 +30,8 @@
  * I do humbly request that you provide me some sort of credit if you use it; but I leave that 
  * choice up to you.
  */
+
+/*jslint white: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, regexp: true, newcap: true, immed: true, strict: true */
 "use strict";
 var keccak32 = (function () {
 	var permute, RC, r, circ, hex, output_fn;
