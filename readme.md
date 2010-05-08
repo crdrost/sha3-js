@@ -48,12 +48,12 @@ competition.
 
 ## Javascript
 
-Javascript is a synthesis of Lisp ideas, C syntax, and an event model which 
-makes all code automatically thread-safe. It is used in databases ([1][couch]), 
-web servers ([2][node]), browser add-ons [3][firefox], and most famously, in 
-most of the web pages you have ever visited. It is the <i>de facto</i> language
-of the world-wide web. And as its implementations become faster, it is becoming 
-even *more* prevalent out there.
+Javascript is a [frequently misunderstood][misunderstood] synthesis of Lisp 
+ideas, C syntax, and an event model which makes all code automatically thread-
+safe. It is used in databases ([1][couch]), web servers ([2][node]), browser 
+add-ons [3][firefox], and most famously, in most of the web pages you have ever 
+visited. It is the <i>de facto</i> language of the world-wide web. And as its 
+implementations become faster, it is becoming even *more* prevalent out there.
 
 Javascript is important because it's incredibly non-idiosyncratic. A Javascript
 program can at times look functional and at times object-oriented; hashmaps can
@@ -99,10 +99,11 @@ planet is running when they visit a web site. Whether this will be valuable to
 the crypto community is something that I leave to them; but I think it's very
 valuable to other web programmers like me.
 
+
 [couch] http://couchdb.apache.org/ "Apache CouchDB"
 [node] http://nodejs.org/ "Node.js"
 [firefox] https://addons.mozilla.org/firefox "Add-ons for Firefox"
-is the <i>de facto</i> language of the web
+[misunderstood] http://www.crockford.com/javascript/javascript.html "Javascript: The World's Most Misunderstood Programming Language"
 
 ## Hash Functions
 A *hash function* is a deterministic data-scrambler: you give it data, and it 
