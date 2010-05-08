@@ -189,5 +189,3 @@ hiding beneath the surface. To give the researchers a smaller target group to
 focus more heavily on, they reduced it to just 14 candidates. The contest is 
 not over yet, but these 14 candidates are all pretty serious contenders, and
 everyone wants to poke holes in everyone else's submissions.
-
-
