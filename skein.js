@@ -36,7 +36,7 @@
  */
 
 "use strict";
-var skein512 = (function () {
+var skein = (function () {
 	var even, odd, charcode, zero, pad, rot, ubi, initial, state, mix, subkey_inject, L;
 	L = function (lo, hi) {
 		this.lo = lo ? lo : 0;
