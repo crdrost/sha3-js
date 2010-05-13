@@ -7,7 +7,7 @@
  * multiple of 2 bytes in length. 
  * 
  * These test vectors are given on the CubeHash NIST CD:
- *     ShortMsgKAT_224.txt ::
+ *     ShortMsgKAT_256.txt ::
  *         Len = 0
  *         Msg = 00
  *         MD = 44C6DE3AC6C73C391BF0906CB7482600EC06B216C7C54A2A8688A6A42676577D

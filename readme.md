@@ -12,7 +12,7 @@ I provide a minified implementation. (Occasionally, I might provide two, if
 there is a shorter algorithm suggested by the spec but which is not totally
 standards-compliant; e.g. Halfskein.)
 
-Presently, the following four are implemented:
+Presently, the following five are implemented:
 
 * [BLAKE][blake], by Aumasson, Henzen, Meier, and Phan
 	* BLAKE-32 is supported in blake32.js
@@ -22,6 +22,8 @@ Presently, the following four are implemented:
 	* Keccak-1600/224 is supported in keccak.js as a "standards-compliant" version.
 	* A Keccak-800/256 version is supported in keccak32.js and keccak32.min.js 
 		as my "shortest available implementation" candidate.
+* [Shabal][shabal], by Bresson, Canteaut, Chevalier-Mames, Clavier, Fuhr, Gouget, Icart, Misarsky, Plasencia, Paillier, Pornin, Reinhard, Thuillet, and Videau
+	* Shabal-256 is supported in shabal.js and shabal.min.js. 
 * [Skein][skein], by Bellare, Callas, Ferguson, Kohno, Lucks, Schneier, Walker, and Whiting
 	* Skein-512-512 is supported in skein.js and skein.min.js
 	* A 32-bit Skein-256-256 (non-compliant) version is supported in 
@@ -36,6 +38,7 @@ compliance wherever possible.
 [blake]: http://131002.net/blake/ "BLAKE Homepage"
 [skein]: http://www.skein-hash.info/ "Skein Homepage"
 [cubehash]: http://cubehash.cr.yp.to/ "CubeHash Homepage"
+[shabal]: http://www.shabal.com/ "Shabal Homepage"
 [jslint]: http://www.jslint.com/ "Doug Crockford's JSLint"
 [zoo]: http://ehash.iaik.tugraz.at/wiki/The_SHA-3_Zoo "The SHA-3 Zoo"
 [packer]: http://dean.edwards.name/packer/ "Dean Edwards's /packer/"
