@@ -12,10 +12,12 @@ I provide a minified implementation. (Occasionally, I might provide two, if
 there is a shorter algorithm suggested by the spec but which is not totally
 standards-compliant; e.g. Halfskein.)
 
-Presently, the following five are implemented:
+Presently, the following six are implemented:
 
 * [BLAKE][blake], by Aumasson, Henzen, Meier, and Phan
-	* BLAKE-32 is supported in blake32.js
+	* BLAKE-32 is supported in blake32.js and blake32.min.js
+* [Blue Midnight Wish][bmw], by Gligoroski, Klima, Knapskog, El-Hadedy, Amundsen, and Mj&oslash;lsnes
+	* BMW256 is supported in bmw.js and bmw.min.js
 * [CubeHash][cubehash], by Dan Bernstein.
 	* CubeHash16/64-256 is supported in cubehash.js and cubehash.min.js
 * [Keccak][keccak], by Bertoni, Daemen, Peeters, and van Assche
@@ -29,19 +31,35 @@ Presently, the following five are implemented:
 	* A 32-bit Skein-256-256 (non-compliant) version is supported in 
 		halfskein.js and halfskein.min.js as shorter.
 
-They all have a similar API: Javascript strings are interpreted with whichever 
+They all have a similar API: each file defines a function which takes 
+Javascript strings to lowercase hexadecimal hash outputs. The string is always
+converted to either UTF-16LE or UTF-16BE bytes, whichever matches the 
+algorithm's own byte conventions. This means that these functions *can* be fed
+binary data, but only if it is an even number of bytes. I view this as 
+preferable to requiring that the binary data be a valid UTF-8 string or other
+such requirements. Some non-minified versions which take byte arrays as inputs
+are available in the source code of [my SHA-3 gadget][gadget]
+
+Javascript strings are interpreted with whichever 
 UTF-16 encoding matches the algorithm's own byte conventions, and are hashed by
-a simple function call. Test vectors are provided in the source code to prove
+a simple function call. So you just feed in a string, and you get an output.
+(For the sake of benchmarks and shortest-length comparison, I didn't want to 
+include a full UTF-8 conversion step, and for the sake of security I decided to
+make every Javascript character accountable to 
+
+Test vectors are provided in the source code to prove
 compliance wherever possible.
 
 [keccak]: http://keccak.noekeon.org/ "Keccak Homepage"
 [blake]: http://131002.net/blake/ "BLAKE Homepage"
+[bmw]: http://www.q2s.ntnu.no/sha3_nist_competition/start "Blue Midnight Wish Homepage"
 [skein]: http://www.skein-hash.info/ "Skein Homepage"
 [cubehash]: http://cubehash.cr.yp.to/ "CubeHash Homepage"
 [shabal]: http://www.shabal.com/ "Shabal Homepage"
 [jslint]: http://www.jslint.com/ "Doug Crockford's JSLint"
 [zoo]: http://ehash.iaik.tugraz.at/wiki/The_SHA-3_Zoo "The SHA-3 Zoo"
 [packer]: http://dean.edwards.name/packer/ "Dean Edwards's /packer/"
+[gadget]: http://code.drostie.org/sha3/ "A SHA-3 Gadget"
 
 # Basics for the Bewildered
 
