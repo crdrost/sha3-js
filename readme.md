@@ -38,14 +38,7 @@ algorithm's own byte conventions. This means that these functions *can* be fed
 binary data, but only if it is an even number of bytes. I view this as 
 preferable to requiring that the binary data be a valid UTF-8 string or other
 such requirements. Some non-minified versions which take byte arrays as inputs
-are available in the source code of [my SHA-3 gadget][gadget]
-
-Javascript strings are interpreted with whichever 
-UTF-16 encoding matches the algorithm's own byte conventions, and are hashed by
-a simple function call. So you just feed in a string, and you get an output.
-(For the sake of benchmarks and shortest-length comparison, I didn't want to 
-include a full UTF-8 conversion step, and for the sake of security I decided to
-make every Javascript character accountable to 
+are available in the source code of [my SHA-3 gadget][gadget].
 
 Test vectors are provided in the source code to prove
 compliance wherever possible.
@@ -80,17 +73,22 @@ Javascript is important because it's incredibly non-idiosyncratic. A Javascript
 program can at times look functional and at times object-oriented; hashmaps can
 effortlessly take on the status of objects, only to then become a communication
 layer (via JSON) with server-side processes; iterative and recursive algorithms
-are both expressed equally naturally.
+are both expressed equally naturally. You sometimes see a little idiosyncrasy,
+like <code>var self = this;</code>, but it's generally an exception rather than
+a rule.
 
 Unfortunately, much has been left out: and unlike Python and Java, the standard
 libraries which a Javascript programmer depends on are especially limited. This
 should not be too surprising, since, for example, you don't expect a Javascript
-web application to access the local file system. And that's the thrust of this
-project: Javascript does not have any native hash functions.
+web application to access the local file system. Nonetheless, the limits are 
+often restrictive. And that's the thrust of this project: Javascript does not 
+have any native hash functions.
 
 It is missing a bunch of other things, too. For example, Javascript has exactly
-one number type: what you would probably call a "double". It *does* have 32-bit 
-integer operations on those doubles, like bitwise XORs, so not all is lost; it
+one number type: what you would probably call a "double". There are no 64-bit
+long integers, and in fact there aren't technically any 32-bit integers -- 
+although to "bridge the gap", Javascript *does* support 32-bit signed 
+integer *operations* on those doubles, like bitwise XOR, so not all is lost; it
 is straightforward, too, to build a 64-bit compatibility layer.
 
 Javascript strings are natively UTF-16 encoded, with hacky use of a couple of
@@ -99,19 +97,28 @@ conversion to and from a UTF-8 representation. After some consideration, I've
 decided that my functions should take strings as input and yield hex strings as
 output, since that is the most common Javascript usage case for hash functions.
 This has one important consequence: the functions will generally only handle 
-messages which are an even multiple of 16 bits in length. (All of the other
-solutions I've considered were comparatively bad solutions.)
+messages which are an even multiple of 16 bits in length. All of the other
+solutions I've considered were comparatively bad solutions.
 
-Many javascript functions are "bookmarklets", designed to fit within a URL, and
-have to boil down to less than 2000 characters or so for Internet Explorer 
+Many javascript functions are "bookmarklets", which need to fit within a URL, 
+and have to boil down to less than 2000 characters or so for Internet Explorer 
 compatibility. (Other browsers aren't nearly so limited.) Thus, the question 
 "what's the fewest number of characters that I can implement this function in?"
-is indeed meaningful. I have also provided a simple function for benchmarking
-different hash functions, to ask the question of "which one is faster?" -- but
-keep in mind that there is probably a huge variation between browsers on such a
-simple matter. 
+is indeed meaningful. Automated "minifiers" -- code compressors -- are now
+commonplace for Javascript code, but the code should still be authored in such
+a way as to get the most benefit out of such minification. The result is a sort
+of metric for how "simple" an algorithm is on a 32-bit platform: shorter code
+means a simpler algorithm.
 
-Those are the three most important design criteria for Javascript: 32-bit
+I have also provided a simple function for benchmarking different hash 
+functions, to ask the question of "which one is faster?" -- but keep in mind 
+that:
+
+1. there is probably a huge variation between browsers on such a simple matter,
+2. browsers don't generally run performance-critical code, and
+3. hash functions are not usually in the 20% of the code that takes 80% of the time.
+
+Still, those are the three most important design criteria for Javascript: 32-bit
 operations, less than 2000 characters (ideally less than 1000), and fast. Speed
 tests and shortest-implementation trials in Javascript allow us to compare the 
 SHA-3 candidates on a totally new platform: it's rather like seeing an 8-bit 
@@ -119,7 +126,6 @@ hardware application, only this is a language which almost everybody on the
 planet is running when they visit a web site. Whether this will be valuable to 
 the crypto community is something that I leave to them; but I think it's very
 valuable to other web programmers like me.
-
 
 [couch]: http://couchdb.apache.org/ "Apache CouchDB"
 [node]: http://nodejs.org/ "Node.js"
@@ -135,22 +141,24 @@ I want you to read that last paragraph again and let it sink in. Let me give a
 trivial example: if you have ever sorted files by file size on your computer, 
 then that's a simple example. You convert all of the files into numbers because
 it's much easier to handle the smallish number than it is to handle reading the
-whole file.
+whole file. You use the number instead of the raw data.
 
 With a good hash function, the idea is that no two strings, and no two files,
 share the same fingerprint, unless they contain the exact same data. You can
 thus verify a file's integrity by checking its fingerprint, as is done in the
 BitTorrent protocol. Or, you can sign an entire document by simply signing its
-fingerprint, as is done in SSL.
+fingerprint, as is done in SSL. 
 
 Obviously, then, file size is not a "good" hash. While as a number it is nice
-and small, many very different files will have the exact same file size.
+and small, many very different files will have the exact same file size. You 
+see, there are two goals here: smallness and uniqueness. File size is good with
+smallness, but not good with uniqueness.
 
-It is *mathematically impossible* to guarantee both of the above goals at the 
-same time. If the number is "smallish", then fingerprints will have duplicates.
-The goal of a *cryptographic* hash function is to make a fingerprinting method 
+It is *mathematically impossible* to guarantee both of these goals at the same
+time. If the number is "smallish", then fingerprints will have duplicates. The 
+goal of a *cryptographic* hash function is to make a fingerprinting method 
 which is "good enough": it should be *hard* to find two files with the same 
-fingerprint.
+fingerprint, without the fingerprints being too long to handle.
 
 This goal inspires several design criteria for a cryptographic hash function. For example:
 
@@ -168,46 +176,58 @@ and then looking for a preimage -- if your input string is bigger than the hash
 function output, then there is a very good chance that you will get a different
 string from the one you started with. In turn, this breaks #4, since you now 
 have a rather massive difference between two strings which doesn't change the 
-fingerprint at all. 
+fingerprint at all -- if you can find a systematic pattern, which you presumably
+can if you are breaking #2, #3, and #4, then you can probably use it to break
+#5 and #6. So, the first breaks typically come on criterion #5 or #6, and then
+they become stronger and stronger as more people apply their bright minds to the
+target of investigation.
 
 Again, I must stress that absolute perfection is impossible: even your best 
-128-bit hash function falls short of these criteria if someone can do 2^64 
-operations using it. 
+128-bit hash function falls short of these criteria if someone can do 2<sup>64</sup> 
+operations using it. The 2<sup>N/2</sup> standard for an N-bit hash function is
+a pretty normal expectation for its security.
 
 As of early 2010, the [top supercomputers in the world][top500] can manage a
-bit over 2^50 operations per second, or around 2^75 operations per year. And
-they're only getting faster, by about one bit per year: so next year, expect
-2^76, and the year after that 2^77, and so on. A good 256-bit hash function
-should therefore protect you for at least the next 50 years -- and there is
-no way that your application will live that long in this digital age. ;-D
+bit over 2<sup>50</sup> operations per second, or around 2<sup>75</sup> operations per year. 
+And they're only getting faster, by about one bit per year: so next year, expect
+2<sup>76</sup>, and the year after that 2<sup>77</sup>, and so on. Eventually, we
+will probably either hit a technological singularity or a barrier to this sort of
+progress, but if the status quo is maintained, then an ideal 256-bit hash function 
+would protect you for at least the next 50 years -- and there is no way that your 
+application will live that long in this digital age. ;-D
 
 [top500]: http://www.top500.org/ "Top 500 supercomputing sites"
 
 ## Overview of SHA-3
 
 At the opening of the new millenium, it was discovered that our most-used hash 
-functions fell ridiculously short of these standards. Soon after, researchers
-published an active break on the SSL protocol: their attack used the weakness
-of the popular MD5 algorithm to enable them to "lift" a digital signature from
-one document to another, since SSL only signs the document's hash, not the 
-whole document. The even-more-popular sha1 has been pushed to an uncomfortable
-level already. People are worried because the NSA's updated algorithms -- the
-SHA-2 algorithms (sha224, sha256, sha384, and sha512) -- have the same general 
-structure as sha1 did. 
+functions fell ridiculously short of the six design criteria I've stated above. 
+Soon after, researchers published an active break on the SSL protocol: their 
+attack used the weakness of the popular MD5 algorithm to enable them to "lift" 
+a digital signature from one document to another, since SSL only signs the 
+document's hash, not the whole document. The even-more-popular sha1 has been 
+pushed to an uncomfortable level already. People are worried because the NSA's 
+updated algorithms -- the SHA-2 algorithms (sha224, sha256, sha384, and sha512) 
+-- have the same general structure as sha1 did. 
 
 The US government had done reasonably well when it last orchestrated a public
 cryptographic competition: the block cipher that they created, AES, is now the
-de facto standard for all secure information transmission online, as well as
+<i>de facto</i> standard for all secure information transmission online, as well as
 one of the popular options for hard-drive encryption. It has a couple of breaks
-at this point, but nothing too scary. The US agency NIST decided to organize a 
-new contest, this time for a next-generation hash function. Though it will have
-nothing to do with either SHA-1 or SHA-2, they have insisted on the confusing 
-and unimaginative name "SHA-3". We can only hope that they change their minds 
-before the contest is over. 
+at this point, especially on its 256-bit key version, but it's nothing too scary. 
+The US agency NIST decided to organize a new contest, this time for a next-generation 
+hash function. Though it will have nothing to do with either SHA-1 or SHA-2, they 
+have insisted on the confusing and unimaginative name "SHA-3". We can only hope 
+that they change their minds before the contest is over. 
 
-The fantastic success of their last competition was not unforgotten: they 
+The fantastic success of their last competition was not forgotten: they 
 received some 60-something contest entries, many of which had pretty bad flaws 
 hiding beneath the surface. To give the researchers a smaller target group to 
 focus more heavily on, they reduced it to just 14 candidates. The contest is 
 not over yet, but these 14 candidates are all pretty serious contenders, and
 everyone wants to poke holes in everyone else's submissions.
+
+It's an exciting playing field. I hope that they choose an algorithm which will
+port better to Javascript than sha256 does.
+
+
