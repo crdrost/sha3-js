@@ -21,7 +21,7 @@ Presently, the following six are implemented:
 * [CubeHash][cubehash], by Dan Bernstein.
 	* CubeHash16/64-256 is supported in cubehash.js and cubehash.min.js
 * [Keccak][keccak], by Bertoni, Daemen, Peeters, and van Assche
-	* Keccak-1600/224 is supported in keccak.js as a "standards-compliant" version.
+	* Keccak-1600/224 is supported in keccak.js and keccak.min.js as a "standards-compliant" version.
 	* A Keccak-800/256 version is supported in keccak32.js and keccak32.min.js 
 		as my "shortest available implementation" candidate.
 * [Shabal][shabal], by Bresson, Canteaut, Chevalier-Mames, Clavier, Fuhr, Gouget, Icart, Misarsky, Plasencia, Paillier, Pornin, Reinhard, Thuillet, and Videau
