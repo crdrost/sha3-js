@@ -212,10 +212,10 @@ many of the following criteria:
 These are arranged roughly from weakest criteria to strongest: for example, if 
 you can succeed at attacking criterion #2, then you automatically have an attack
 on criteria #3 and #4, but there is no guarantee of the reverse. So, #4, #5, and 
-#6 are the most restrictive, whereas #1 is "just the bare minimum." Accordingly, 
-the first breaks typically come on criteria #5 and #6, and then they become 
-stronger and stronger as more cryptanalysts apply their bright minds to the 
-hash function's internal structure. 
+ #6 are the most restrictive, whereas #1 is "the bare minimum." Accordingly, the 
+first breaks typically come on criteria #5 and #6, and then they become stronger 
+and stronger as more cryptanalysts apply their bright minds to the hash 
+function's internal structure. 
 
 Again, I must stress that absolute perfection is impossible, and it's tied to
 the size of the output numbers and how "small" they are. If they are 128 bits
