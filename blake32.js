@@ -37,7 +37,7 @@
 /*jslint white: true, onevar: true, undef: true, nomen: true, eqeqeq: true, plusplus: true, regexp: true, newcap: true, immed: true, strict: true */
 "use strict";
 var blake32 = (function () {
-	var iv, g, r, block, constants, sigma, circ, state, message, output, two32;
+	var iv; var g; var r; var block; var constants; var sigma; var circ; var state; var message; var output; var two32;
 	two32 = 4 * (1 << 30);
 	iv = [
 		0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
@@ -55,33 +55,27 @@ var blake32 = (function () {
 		}
 		return ("00000000" + i.toString(16)).slice(-8);
 	};
-	/* The spec calls for 2*i and 2 * i + 1 to be passed into the g function 
-	 * simultaneously. This implementation splits this even-and-odd distinction
-	 * in the source code itself: sigma.u[r][i] is the even coefficient and
-	 * sigma.v[r][i] is the odd one. 
+	/* The spec calls for the sigma values at 2i and 2i + 1 to be passed into 
+	 * the g function simultaneously. This implementation uses a byte array to
+	 * perform this task.
 	 */
-	sigma = {
-		u: [
-			[0, 2, 4, 6, 8, 10, 12, 14],   [14, 4, 9, 13, 1, 0, 11, 5], 
-			[11, 12, 5, 15, 10, 3, 7, 9],  [7, 3, 13, 11, 2, 5, 4, 15], 
-			[9, 5, 2, 10, 14, 11, 6, 3],   [2, 6, 0, 8, 4, 7, 15, 1], 
-			[12, 1, 14, 4, 0, 6, 9, 8],    [13, 7, 12, 3, 5, 15, 8, 2], 
-			[6, 14, 11, 0, 12, 13, 1, 10], [10, 8, 7, 1, 15, 9, 3, 13]
-		], 
-		v: [
-			[1, 3, 5, 7, 9, 11, 13, 15],  [10, 8, 15, 6, 12, 2, 7, 3], 
-			[8, 0, 2, 13, 14, 6, 1, 4],   [9, 1, 12, 14, 6, 10, 0, 8], 
-			[0, 7, 4, 15, 1, 12, 8, 13],  [12, 10, 11, 3, 13, 5, 14, 9], 
-			[5, 15, 13, 10, 7, 3, 2, 11], [11, 14, 1, 9, 0, 4, 6, 10], 
-			[15, 9, 3, 8, 2, 7, 4, 5],    [2, 4, 6, 5, 11, 14, 12, 0]
-		]
-	};
+	sigma = [
+		[16, 50, 84, 118, 152, 186, 220, 254], [174, 132, 249, 109, 193, 32, 123, 53], 
+		[139, 12, 37, 223, 234, 99, 23, 73], [151, 19, 205, 235, 98, 165, 4, 143], 
+		[9, 117, 66, 250, 30, 203, 134, 211], [194, 166, 176, 56, 212, 87, 239, 145], 
+		[92, 241, 222, 164, 112, 54, 41, 184], [189, 231, 28, 147, 5, 79, 104, 162], 
+		[246, 158, 59, 128, 44, 125, 65, 90], [42, 72, 103, 81, 191, 233, 195, 13]
+	];
 	circ = function (a, b, n) {
 		var s = state[a] ^ state[b];
 		state[a] = (s >>> n) | (s << (32 - n));
 	};
 	g = function (i, a, b, c, d) {
-		var u = block + sigma.u[r][i], v = block + sigma.v[r][i];
+		var u = block + sigma[r][i] % 16, v = block + (sigma[r][i] >> 4);
+		a %= 4;
+		b = 4 + b % 4;
+		c = 8 + c % 4;
+		d = 12 + d % 4;
 		state[a] += state[b] + (message[u] ^ constants[v % 16]);
 		circ(d, a, 16);
 		state[c] += state[d];
@@ -95,7 +89,7 @@ var blake32 = (function () {
 		if (! (salt instanceof Array && salt.length === 4)) {
 			salt = [0, 0, 0, 0];
 		}
-		var pad, chain, len, L, last_L, last, total, i; 
+		var pad; var chain; var len; var L; var last_L; var last; var total; var i; 
 		chain = iv.slice(0);
 		pad = constants.slice(0, 8);
 		for (r = 0; r < 4; r += 1) {
@@ -130,14 +124,13 @@ var blake32 = (function () {
 			state[12] ^= L;
 			state[13] ^= L;
 			for (r = 0; r < 10; r += 1) {
-				g(0, 0, 4,  8, 12);
-				g(1, 1, 5,  9, 13);
-				g(2, 2, 6, 10, 14);
-				g(3, 3, 7, 11, 15);
-				g(4, 0, 5, 10, 15);
-				g(5, 1, 6, 11, 12);
-				g(6, 2, 7,  8, 13);
-				g(7, 3, 4,  9, 14);
+				for (i = 0; i < 8; i += 1) {
+					if (i < 4) {
+						g(i, i, i, i, i);
+					} else {
+						g(i, i, i + 1, i + 2, i + 3);
+					}
+				}
 			}
 			for (i = 0; i < 8; i += 1) {
 				chain[i] ^= salt[i % 4] ^ state[i] ^ state[i + 8];
