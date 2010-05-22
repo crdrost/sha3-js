@@ -76,8 +76,7 @@ var bmw = (function () {
 		return (n < 16) ? x >>> n : x << (n - 16);
 	};
 	// There are also some erratic expansion constants, which are defined here:
-	ec_s = "+-+++,+-++-,++-++,+-++-,+--++,+-+-+,-+--+,--+--,+-+--,++-+-,+---+,---++,++--+,+++++,+-+--,---++"
-			.split(",");
+	ec_s = [29, 13, 27, 13, 25, 21, 18, 4, 5, 11, 17, 24, 19, 31, 5, 24];
 	ec_n = [5, 7, 10, 13, 14];
 	ec2_rot = [0, 3, 7, 13, 16, 19, 23, 27];
 
@@ -93,7 +92,7 @@ var bmw = (function () {
 			for (j = 0; j < 5; j += 1) {
 				k = (i + ec_n[j]) % 16;
 				b = H[k] ^ m[k];
-				a += ec_s[i].charAt(j) === "+" ? b : -b;
+				a += (ec_s[i] >> j) % 2 ? b : -b;
 			}
 			Q[i] = H[(i + 1) % 16] + s(a, i % 5);
 		}
