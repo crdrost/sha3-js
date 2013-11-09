@@ -1,29 +1,29 @@
 /* keccak32.js
- * Implements keccak[256, 544, 0] truncated to 256 bits, acting on UTF-16LE 
- * strings. In order to prove conformance with the standard, I have played 
- * around with the submitters' KeccakTools program to obtain the following test
- * vectors, all analogues of the ShortMsgKAT_256.txt tests that NIST requests:
- * 
- *     Length: 0
- *     Message:
- *     Hash: 775e75101d7b5ed8145ad59eb8fd2522a3478c5c4a4f0443dfefab049909102b
- *     
- *     Length: 16
- *     Message: 41fb
- *     Hash: a224469e2030ef166ed0d3959c26e79e6cb50cabf3a90a5bbba2501ad8a2d7c3
- *     
- *     Length: 2000
- *     Message: b3c5e74b69933c2533106c563b4ca20238f2b6e675e8681e34a389894785bdade59652d4a73d80a5c85bd454fd1e9ffdad1c3815f5038e9ef432aac5c3c4fe840cc370cf86580a6011778bbedaf511a51b56d1a2eb68394aa299e26da9ada6a2f39b9faff7fba457689b9c1a577b2a1e505fdf75c7a0a64b1df81b3a356001bf0df4e02a1fc59f651c9d585ec6224bb279c6beba2966e8882d68376081b987468e7aed1ef90ebd090ae825795cdca1b4f09a979c8dfc21a48d8a53cdbb26c4db547fc06efe2f9850edd2685a4661cb4911f165d4b63ef25b87d0a96d3dff6ab0758999aad214d07bd4f133a6734fde445fe474711b69a98f7e2b
- *     Hash: f39724f7822db9e0affc48664597379501185cbfb4f56d3f7626b847ccf07072 
+ * Implements the final version of keccak[256, 544, 0] submitted to NIST,
+ * truncated to 256 bits and acting on UTF-16LE strings.
  *
+ * The following test vectors are given on the Keccak NIST CD:
+ *     ShortMsgKAT_r256c544.txt
+ *         Len = 0
+ *         Msg = 00
+ *         Squeezed = 2507DC4976767ADD735F22C1831FBF323CB9F94755C289A680B327ADFF881FCD5D9B3816314C55AB80881001B833C5BD02E8AC5359B07C27ACDFBB64ABE8738451AA7049
+ *         ...
+ *         Len = 16
+ *         Msg = 41FB
+ *         Squeezed = DCCDEF818CEEFE1CB20AF60AAFBF836D889462AC1A1BCEB756648B6B5CAE991B2C7C8976BA791CB69E8254ADAE50FD7A0F0AADB2546A45C55F7824EBD4A48998C09A69E7
+ *         ...
+ *         Len = 2000
+ *         Msg = B3C5E74B69933C2533106C563B4CA20238F2B6E675E8681E34A389894785BDADE59652D4A73D80A5C85BD454FD1E9FFDAD1C3815F5038E9EF432AAC5C3C4FE840CC370CF86580A6011778BBEDAF511A51B56D1A2EB68394AA299E26DA9ADA6A2F39B9FAFF7FBA457689B9C1A577B2A1E505FDF75C7A0A64B1DF81B3A356001BF0DF4E02A1FC59F651C9D585EC6224BB279C6BEBA2966E8882D68376081B987468E7AED1EF90EBD090AE825795CDCA1B4F09A979C8DFC21A48D8A53CDBB26C4DB547FC06EFE2F9850EDD2685A4661CB4911F165D4B63EF25B87D0A96D3DFF6AB0758999AAD214D07BD4F133A6734FDE445FE474711B69A98F7E2B
+ *         Squeezed = 558003DE96ACABA616A73027DFE205C8D011A90F9E12A0751E86DD1A3F11569520B1FAF0455343937697693B6095DE0646111B4865EB2587EABA56A25459045A29DC6AB3
+ * 
  * Since this implementation is little-endian, the corresponding Javascript is:
  * 
  *     keccak32("");
- *         "775e75101d7b5ed8145ad59eb8fd2522a3478c5c4a4f0443dfefab049909102b"
+ *         "2507dc4976767add735f22c1831fbf323cb9f94755c289a680b327adff881fcd"
  *     keccak32("\ufb41");
- *         "a224469e2030ef166ed0d3959c26e79e6cb50cabf3a90a5bbba2501ad8a2d7c3"
+ *         "dccdef818ceefe1cb20af60aafbf836d889462ac1a1bceb756648b6b5cae991b"
  *     keccak32("\uC5B3\u4BE7\u9369\u253C\u1033\u566C\u4C3B\u02A2\uF238\uE6B6\uE875\u1E68\uA334\u8989\u8547\uADBD\u96E5\uD452\u3DA7\uA580\u5BC8\u54D4\u1EFD\uFD9F\u1CAD\u1538\u03F5\u9E8E\u32F4\uC5AA\uC4C3\u84FE\uC30C\uCF70\u5886\u600A\u7711\uBE8B\uF5DA\uA511\u561B\uA2D1\u68EB\u4A39\u99A2\u6DE2\uADA9\uA2A6\u9BF3\uAF9F\uFBF7\u57A4\u9B68\u1A9C\u7B57\u1E2A\u5F50\u75DF\uA0C7\u4BA6\uF81D\u3A1B\u6035\uBF01\uF40D\u2AE0\uC51F\u659F\u9D1C\u5E58\u22C6\uB24B\uC679\uBABE\u6629\u88E8\u682D\u6037\uB981\u4687\u7A8E\u1EED\u0EF9\u09BD\uE80A\u7925\uDC5C\uB4A1\u9AF0\u9C97\uFC8D\uA421\u8A8D\uCD53\u26BB\uDBC4\u7F54\u6EC0\u2FFE\u5098\uD2ED\u5A68\u6146\u49CB\uF111\uD465\u3EB6\u5BF2\uD087\u6DA9\uFF3D\uB06A\u8975\uAA99\u14D2\u7BD0\uF1D4\uA633\u4F73\u44DE\uE45F\u7174\u691B\u8FA9\u2B7E");
- *         "f39724f7822db9e0affc48664597379501185cbfb4f56d3f7626b847ccf07072"
+ *         "558003de96acaba616a73027dfe205c8d011a90f9e12a0751e86dd1a3f115695"
  * 
  * This function was written by Chris Drost of drostie.org, and he hereby dedicates it into the 
  * public domain: it has no copyright. It is provided with NO WARRANTIES OF ANY KIND. 
@@ -59,9 +59,14 @@ var keccak32 = (function () {
 		C = [];
 		D = [];
 		next = [];
-		m += "\u0001\u0120";
-		while (m.length % 16 !== 0) {
-			m += "\u0000";
+		if (m.length % 16 === 15) {
+			m+="\u8001";
+		} else {
+			m += "\x01";
+			while (m.length % 16 !== 15) {
+				m += "\0";
+			}
+			m+="\u8000";
 		}
 		for (b = 0; b < m.length; b += 16) {
 			for (k = 0; k < 16; k += 2) {
